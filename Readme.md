@@ -1,214 +1,225 @@
-# VectorShift Frontend Technical Assessment
+# VectorShift Frontend Assessment -- Video Walkthrough (Storytelling Version)
 
-## Overview
+## Introduction (45-60 sec)
 
-This repository contains my implementation of the VectorShift Frontend Technical Assessment.
+Hi everyone, I'm **Manmohan Jangra**.
 
-The assessment is based on an existing React Flow application where the objective is to extend and improve the current implementation instead of rebuilding it. The focus is on improving the application's architecture, maintainability, user experience, and backend integration while preserving the existing functionality.
+I'm a Frontend Engineer with around **5 years of experience** building
+scalable React applications. Most of my experience has been in startup
+environments where I've worked on reusable component architecture,
+performance optimization, and integrating frontend applications with
+backend services.
 
-The implementation follows the technologies specified in the assessment:
+For this assessment, I focused on writing maintainable frontend code,
+improving the overall user experience, and completing the required
+backend integration.
 
-- Frontend: React (JavaScript)
-- Backend: FastAPI (Python)
+Now I'll walk through my approach task by task.
 
----
+------------------------------------------------------------------------
 
-# Assessment Objectives
+# Part 1 -- Reusable Node Architecture
 
-The assessment consists of four independent tasks.
+## The Problem
 
-## Part 1: Node Abstraction
+The assessment required multiple nodes like Input, Output, LLM, and
+Text.
 
-Refactor the existing node implementation to remove duplicated code by introducing a reusable abstraction. Demonstrate the abstraction by creating five additional node types.
+Initially, every node existed as an individual React component. While
+this worked for four nodes, I noticed that almost every component had
+the same structure. The only differences were the node title, fields,
+and handles.
 
-## Part 2: Styling
+As more nodes get added, this would create duplicated code and become
+difficult to maintain.
 
-Apply a consistent visual design across the application while maintaining the existing functionality.
+## My Thought Process
 
-## Part 3: Text Node Logic
+Instead of solving the problem for only four nodes, I wanted to design
+something that could easily support twenty or fifty node types without
+rewriting components.
 
-Enhance the Text Node with:
+So I separated the common logic from the node-specific configuration.
 
-- Dynamic resizing based on user input.
-- Automatic detection of variables enclosed within double curly braces (`{{variable}}`).
-- Dynamic creation of input handles for detected variables.
+## Solution
 
-## Part 4: Backend Integration
+I created a reusable **BaseNode** component which contains the common UI
+and behavior shared by every node.
 
-Connect the frontend with the provided FastAPI backend to:
+Then I created **nodeConfigs.js**, where each node simply defines its
+own configuration such as:
 
-- Submit the current pipeline.
-- Calculate the number of nodes.
-- Calculate the number of edges.
-- Determine whether the pipeline forms a Directed Acyclic Graph (DAG).
-- Display the backend response in a user-friendly format.
+-   title
+-   fields
+-   input handles
+-   output handles
 
----
+Finally, I created a **createNodeComponent** factory which reads the
+configuration and generates the corresponding React component
+automatically.
 
-# Project Goals
+(Show BaseNode → nodeConfigs → createNodeComponent)
 
-The implementation focuses on the following goals:
+## Result
 
-- Reduce duplicated code.
-- Improve maintainability.
-- Keep responsibilities clearly separated.
-- Preserve the existing project structure wherever possible.
-- Improve the overall user experience.
-- Make it easier to add new node types in the future.
+Now adding a completely new node doesn't require creating another React
+component.
 
----
+I only need to add another configuration object, making the application
+much more scalable and maintainable.
 
-# Engineering Decisions
+------------------------------------------------------------------------
 
-Throughout the implementation, the following principles are followed:
+# Part 2 -- Dynamic Text Node
 
-- Reuse common functionality instead of duplicating code.
-- Keep each component focused on a single responsibility.
-- Separate reusable layouts from node-specific content.
-- Keep styling consistent across the application.
-- Minimize changes to the existing project structure.
-- Build solutions that are straightforward to maintain and extend.
+## The Problem
 
-These decisions help keep the codebase organized while making future enhancements simpler to implement.
+The next task required the Text node to automatically generate handles
+whenever the user entered variables like:
 
----
+    Hello {{name}}
 
-# Repository Structure
+The challenge was detecting variables dynamically, avoiding duplicate
+handles, and ensuring the node adapted as the text changed.
 
-```text
-frontend/
-│
-├── src/
-│   ├── nodes/
-│   ├── App.js
-│   ├── toolbar.js
-│   ├── draggableNode.js
-│   ├── submit.js
-│   ├── store.js
-│   └── ui.js
-│
-└── package.json
+## My Thought Process
 
-backend/
-│
-├── main.py
-└── ...
-```
+I wanted the node to derive its handles directly from the text instead
+of manually maintaining them.
 
----
+That way, the UI would always stay synchronized with user input.
 
-# Implementation Summary
+## Solution
 
-## Part 1: Node Abstraction
+I used a regular expression to identify variables inside double curly
+braces.
 
-### Objective
+(Show the regex.)
 
-Remove duplicated logic shared across the existing node components by introducing a reusable abstraction.
+Each detected variable is converted into an input handle.
 
-### Expected Outcome
+To avoid duplicate handles, I used a Set before rendering.
 
-- Shared layout managed from a single location.
-- Individual nodes define only their unique content.
-- New node types require significantly less code.
-- Consistent structure across all nodes.
+I also added dynamic sizing so the node expands naturally as more
+content is entered.
 
----
+## Result
 
-## Part 2: Styling
+Now the Text node automatically updates itself based on the user's input
+without any additional configuration.
 
-### Objective
+------------------------------------------------------------------------
 
-Create a consistent visual experience across the application.
+# Part 3 -- Frontend Architecture & UI Improvements
 
-### Expected Outcome
+## The Problem
 
-- Improved spacing.
-- Better typography.
-- Consistent colors.
-- Clear visual hierarchy.
-- Cleaner node presentation.
+The starter project was functional but visually very basic.
 
----
+It also contained several inline styles, making future maintenance more
+difficult.
 
-## Part 3: Text Node Logic
+## My Thought Process
 
-### Objective
+I wanted the application to feel closer to a modern SaaS product while
+keeping the implementation clean and reusable.
 
-Improve the editing experience inside the Text Node.
+Instead of styling individual components independently, I first created
+a common design system and then reused it throughout the application.
 
-### Features
+## Solution
 
-- Automatic resizing as text grows.
-- Variable detection using `{{variable}}`.
-- Dynamic generation of input handles based on detected variables.
+I reorganized the layout into:
 
----
+-   Header
+-   Sidebar
+-   Canvas
 
-## Part 4: Backend Integration
+I redesigned the BaseNode component using reusable styles for spacing,
+typography, borders, and shadows.
 
-### Objective
+I also updated the toolbar styling, improved the drag-and-drop
+experience, and made the overall interface cleaner and more consistent.
 
-Connect the frontend with the backend.
+(Show the application while dragging nodes.)
 
-### Backend Response
+## Result
 
-The backend returns:
+The UI is now significantly more polished while remaining easy to
+maintain because most styling is shared instead of duplicated.
 
-- Number of nodes.
-- Number of edges.
-- Whether the pipeline is a Directed Acyclic Graph (DAG).
+------------------------------------------------------------------------
 
-The frontend displays this information after the pipeline is submitted.
+# Part 4 -- Backend Integration
 
----
+## The Problem
 
-# Technologies
+The final task required connecting the frontend with a FastAPI backend.
 
-## Frontend
+The frontend needed to send the pipeline, and the backend had to return:
 
-- React
-- React Flow
-- Zustand
-- JavaScript
+-   Number of nodes
+-   Number of edges
+-   Whether the graph is a Directed Acyclic Graph
 
-## Backend
+## My Thought Process
 
-- Python
-- FastAPI
+Since this role is primarily focused on frontend engineering, I kept the
+backend implementation simple and focused on fulfilling the required API
+contract.
 
----
+Although my primary backend experience is with Node.js and Express, I
+applied the same API design principles while working with FastAPI.
 
-# Running the Project
+## Solution
 
-## Frontend
+On the frontend, clicking **Submit Pipeline** retrieves the current
+nodes and edges from the Zustand store and sends them to the backend
+using a POST request.
 
-```bash
-cd frontend
-npm install
-npm start
-```
+On the backend, I implemented the required endpoint, counted the nodes
+and edges, and used NetworkX to determine whether the pipeline forms a
+Directed Acyclic Graph.
 
-## Backend
+Finally, the frontend displays the returned analysis in a simple
+user-friendly alert.
 
-```bash
-cd backend
-uvicorn main:app --reload
-```
+(Show submit.js, then main.py, then the running application.)
 
----
+## Result
 
-# Documentation
+The frontend and backend are now fully integrated, allowing users to
+create a pipeline, submit it, and immediately receive feedback.
 
-Additional documentation is included with the project:
+------------------------------------------------------------------------
 
-- `ARCHITECTURE.md` – Project structure and design decisions.
-- `IMPLEMENTATION_NOTES.md` – Task-by-task implementation details.
-- `SCREEN_RECORDING_SCRIPT.md` – Walkthrough script for the assessment demonstration.
+# Biggest Challenge
 
----
+The biggest challenge for me was designing a reusable architecture
+rather than solving the problem only for the current requirements.
 
-# Notes
+Taking a little extra time to refactor early helped reduce duplicated
+code and made every subsequent task much easier to implement.
 
-This project was completed as part of the VectorShift Frontend Technical Assessment. The implementation follows the requirements provided in the assessment while emphasizing maintainability, consistency, and clarity throughout the codebase.
-# React_assess
-# React_assess
+------------------------------------------------------------------------
+
+# Future Improvements
+
+If I had more time, I would:
+
+-   Replace the browser alert with a modal or toast.
+-   Add loading and error states.
+-   Validate pipelines before submission.
+-   Add automated tests using React Testing Library.
+-   Support more configurable node types.
+
+------------------------------------------------------------------------
+
+# Closing
+
+Overall, this assessment allowed me to demonstrate my approach to
+frontend architecture, reusable component design, UI improvements, state
+management, and backend API integration.
+
+Thank you for taking the time to review my submission. I really enjoyed
+working on this assessment, and I look forward to discussing it further.
